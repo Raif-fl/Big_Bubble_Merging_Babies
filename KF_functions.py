@@ -32,38 +32,55 @@ def to_kmers(string, k):
             k_mers[window] = 1
     return k_mers
 
-def union_graph(db1, db2):
+def union_graph(db1,db2):
     union = {}
-    for i in db1:
+    #purple = {}
+    all_keys = set(list(db1.keys()) + list(db2.keys()))
+    for key in all_keys:
+        # Makes sure the key is already in union. 
         try:
-            y = union[i]
+            blank = union[key]
         except:
-            union[i] = []
+            union[key] = []
+            #purple[key] = []
+    
+        # Checks to see if this key is present in the first De-bruijn, and if not 
+        # adds the information at that key to the union graph
         try:
-            x = db2[i]
-            for j in db1[i]:
-                if j not in x:
-                    union[i].append((j))
+            x = db1[key]
         except:
-            union[i] = []
-            for j in db1[i]:
-                union[i].append((j))
-
-    for i in db2:
+            for j in db2[key]:
+                union[key].append((j[0],-1*j[1]))
+            continue
+    
+        # Checks to see if this key is present in the second De-bruijn, and if not 
+        # adds the information at that key to the union graph
         try:
-            y = union[i]
+            y = db2[key]
         except:
-            union[i] = []
-        try:
-            x = db1[i]
-            for j in db2[i]:
-                if j not in x:
-                    union[i].append((j[0], -1 * j[1]))
-        except:
-            union[i] = []
-            for j in db2[i]:
-                union[i].append((j[0], -1 * j[1]))
-
-    # Remove nodes that go nowhere from the Trie:
-    union = {key: value for key, value in union.items() if value}
-    return union
+            for i in db1[key]:
+                union[key].append((i))
+            continue
+    
+        ###!!!### This is definitely a bit slow, but it is the only way to ensure that it works perfectly right now. 
+        for i in db1[key]:
+            if i[0] not in [z[0] for z in db2[key]]:
+                union[key].append((i[0],i[1]))
+            if i in db2[key]:
+                #purple[key].append(i[0])
+                
+        for j in db2[key]:
+            if j[0] not in [z[0] for z in db1[key]]:
+                union[key].append((j[0],-1*j[1]))
+        
+        for i in db1[key]:
+            for j in db2[key]:
+                if i[0] == j[0]:
+                    if i[1] != j[1]:
+                        union[key].append((i[0], i[1] - j[1]))
+                        
+        # if len(purple[key]) == 0:
+        #     del purple[key]
+        if len(union[key]) == 0:
+            del union[key]
+    return (union)
