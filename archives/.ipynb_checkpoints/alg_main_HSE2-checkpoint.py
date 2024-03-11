@@ -16,20 +16,13 @@ def is_source(node: str, G: Dict):
         return False
 
 def get_next_red_node(source, G):
-    try:
-        edges = G[source]
-    except:
-        return "nothing"
+    edges = G[source]
     candidate_nodes = []
     for edge in edges:
         if edge[1] > 0:
             candidate_nodes.append(edge[0])
-    if len(candidate_nodes) == 0:
-        return "nothing"
-    elif source in candidate_nodes:
-        next_node = copy.copy(source)
-    else:
-        next_node = candidate_nodes[0]
+    ####this will have to change once we decide on how to resolve multiple edges
+    next_node = candidate_nodes[0]
     for i in range(0, len(edges)):
         edge = edges[i]
         node = edge[0]
@@ -44,21 +37,13 @@ def get_next_red_node(source, G):
     return next_node
 
 def get_next_blue_node(source, G):
-    try:
-        edges = G[source]
-    except:
-        return "nothing"
+    edges = G[source]
     candidate_nodes = []
     for edge in edges:
         if edge[1] < 0:
             candidate_nodes.append(edge[0])
     ####this will have to change once we decide on how to resolve multiple edges
-    if len(candidate_nodes) == 0:
-        return "nothing"
-    elif source in candidate_nodes:
-        next_node = copy.copy(source)
-    else:
-        next_node = candidate_nodes[0]
+    next_node = candidate_nodes[0]
     for i in range(0, len(edges)):
         edge = edges[i]
         node = edge[0]
@@ -72,6 +57,8 @@ def get_next_blue_node(source, G):
             break
     return next_node
 
+
+
 def resolve_bubble(source: str, G:Dict, k:int):
     '''
     iterate through source edges and assign 'starts' to red and blue branches. 
@@ -79,15 +66,14 @@ def resolve_bubble(source: str, G:Dict, k:int):
     convention for this alg: red->positive, blue->negative
     '''
     next_red_node = get_next_red_node(source, G)
+    #print(G)
     next_blue_node = get_next_blue_node(source,G)
+    #print(G)
     edit_count = 0
     node_l = k - 1
     change_tracker = ['' for i in range(node_l)]
 
     while True:
-
-        if next_red_node == "nothing" or next_blue_node == "nothing":
-            return edit_count
 
         for i in range(0, node_l):
             #python strings are immutable, have to make them lists
@@ -121,8 +107,6 @@ def transform_graph(union: Dict, k:int):
     for key in union:
         if is_source(key, union):
             sources.append(key)
-    ###!!!### Ok, So basically the keys of union are random which causes the error. 
-    sources.sort()
 
     total_edits = 0
     #loop will continue while there are sources and eges in dict
